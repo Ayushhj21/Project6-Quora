@@ -82,6 +82,9 @@ const userLogin = async (req, res) => {
         if (!validateBody.isValid(password)) {
             return res.status(400).send({ status: false, message: "Please provide password or password field" });;
         }
+        if (!(password.trim().length >= 8 && password.trim().length <= 15)) {
+            return res.status(400).send({ status: false, message: "Please provide password with minimum 8 and maximum 14 characters" });;
+        }
         let user = await userModel.findOne({ email: email });
         if (user) {
             //-----------CHECK USER PASSWORD WITH HASHED PASSWORD STORED IN THE DATABASE
