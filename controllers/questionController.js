@@ -69,35 +69,36 @@ const getQuestions = async (req, res) => {
             var data = await questionModel.find(query)
         }
         for (let i = 0; i < data.length; i++) {
-            let answer = await answerModel.find({ questionId: data[i]._id })
+            let answer = await answerModel.find({ questionId: data[i]._id }).select({ text: 1, answeredBy: 1})
             data[i].answers = answer
+            //console.log(answer)
         }
         return res.status(200).send({ status: true, Details: data });
     } catch (err) {
+        console.log(err)
         return res.status(500).send({ status: false, message: err.message })
     }
 }
 
 
-const getQuestionById=async (req,res)=>{
-    try{
-        const questionId=req.params.questionId
+const getQuestionById = async (req, res) => {
+    try {
+        const questionId = req.params.questionId
         if (!(validateBody.isValidObjectId(questionId))) {
-            return res.status(400).send({ status: false, message:`${questionId} is not a valid id`});
+            return res.status(400).send({ status: false, message: `${questionId} is not a valid id` });
         }
-        const question=await questionModel.findOne({_id:questionId,isDeleted:false})
-        if(!question){
-            return res.status(404).send({status:false,msg:"question does not exist"})
+        const question = await questionModel.findOne({ _id: questionId, isDeleted: false })
+        if (!question) {
+            return res.status(404).send({ status: false, msg: "question does not exist" })
         }
-        let answer=await answerModel.find({questionId:questionId})
-        const data= question.toObject()
-        data['answer']=answer
-        console.log(answer)
-        return res.status(200).send({status:true,msg:"Successfully found data",data:data})
-        
+        let answer = await answerModel.find({ questionId: questionId })
+        const data = question.toObject()
+        data['answer'] = answer
+        return res.status(200).send({ status: true, msg: "Successfully found data", data: data })
 
-    }catch(err){
-        return res.status(500).send({status:false,msg:err.message})
+
+    } catch (err) {
+        return res.status(500).send({ status: false, msg: err.message })
     }
 }
 

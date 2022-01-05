@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController')
 const questionController = require('../controllers/questionController')
-
+const answerController = require('../controllers/answerController')
 
 const middleware = require('../middlewares/authMiddleware')
 
@@ -23,6 +23,9 @@ router.get('/question',questionController.getQuestions)
  router.get('/questions/:questionId',questionController.getQuestionById)
 // //-----------------FOURTH API UPDATE PRODUCT DETAIL
 // router.put('/products/:productId',productController.updateProduct)
+
+
+router.post('/answer',middleware.getUserDetails,answerController.createAnswer)
 
 
 // //-----------------FIFTH API DELETE PRODUCT FROM DB
