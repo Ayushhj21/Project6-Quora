@@ -8,12 +8,13 @@ const saltRounds = 10;
 const userRegistration = async (req, res) => {
     try {
         const requestBody = req.body
-        const { fname, lname, email, phone, password } = requestBody;
-
-
         if (!validateBody.isValidRequestBody(requestBody)) {
             return res.status(400).send({ status: false, message: "Please provide data for successful registration" });
         }
+        const { fname, lname, email, phone, password } = requestBody;
+
+
+       
         if (!validateBody.isValid(fname)) {
             return res.status(400).send({ status: false, message: "Please provide fname or fname field" });
         }

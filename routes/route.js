@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController')
+const questionController = require('../controllers/questionController')
 
 
 const middleware = require('../middlewares/authMiddleware')
@@ -15,10 +16,10 @@ router.post('/user', userController.userRegistration)
 // //-----------------THIRD API UPDATE USER DETAILS
  router.put('/user/:userId/profile',middleware.getUserDetails,userController.updateUser)
 
-// //-----------------FEATURE II - PRODUCT API
-// //-----------------FIRST API CREATE PRODUCT
-// router.post('/products',productController.createProduct)
-// router.get('/products',productController.getproduct)
+// //-----------------FEATURE II - Question API
+
+router.post('/question',middleware.getUserDetails,questionController.createQuestion)
+//  router.get('/question',questionController.getQuestions)
 // router.get('/products/:productId',productController.getProductsById)
 // //-----------------FOURTH API UPDATE PRODUCT DETAIL
 // router.put('/products/:productId',productController.updateProduct)

@@ -4,7 +4,7 @@ const questionSchema = new mongoose.Schema({
 
     description: { type: String, required: true, trim: true },
 
-    tags: [{ type: String,  trim: true }],
+    tag: [String],
 
     askedBy:{ type: mongoose.Schema.Types.ObjectId, ref: 'userModel' },
 
