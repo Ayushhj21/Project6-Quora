@@ -40,8 +40,10 @@ const userRegistration = async (req, res) => {
         if (!validateBody.isString(phone)) {
             return res.status(400).send({ status: false, message: "Please provide phone number or phone field" });
         }
-        if (!/^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/.test(phone.trim())) {
-            return res.status(400).send({ status: false, message: `Phone number should be a  valid indian number` });
+        if (phone) {
+            if (!/^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/.test(phone.trim())) {
+                return res.status(400).send({ status: false, message: `Phone number should be a  valid indian number` });
+            }
         }
         const duplicatePhone = await userModel.findOne({ phone })
         if (duplicatePhone) {
@@ -137,7 +139,7 @@ const getUserList = async (req, res) => {
         if (!user) {
             return res.status(400).send({ status: false, message: "user not found" })
         }
-        return res.status(200).send({ status: true, message: 'User profile details', data:user });
+        return res.status(200).send({ status: true, message: 'User profile details', data: user });
 
 
 
@@ -146,78 +148,31 @@ const getUserList = async (req, res) => {
         return res.status(500).send({ status: false, message: error.message });
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const getUserList = async (req, res) => {
-//     try {
-//         let userId = req.params.userId
-//         let tokenId = req.userId
-
-//         if (!(validateBody.isValidObjectId(userId) && validateBody.isValidObjectId(tokenId))) {
-//             return res.status(400).send({ status: false, message: "userId or tokenid is not valid" });;
-//         }
-
-//         let checkData = await userModel.findOne({ _id: userId });
-//         if (!checkData) {
-//             return res.status(404).send({ status: false, msg: "There is no user exist with this id" });
-//         }
-//         if (!(userId.toString() == tokenId.toString())) {
-//             return res.status(401).send({ status: false, message: `Unauthorized access! Owner info doesn't match` });
-//         }
-//         return res.status(200).send({ status: true, message: 'User profile details', data: checkData });
-//     }
-//     catch (err) {
-//         console.log(err)
-//         return res.status(500).send({ status: false, msg: err.message });
-//     }
-// }
-
-
 //-----------------Fourth API UPDATE USER DETAILS
-const updateUserList = async (req, res) => {
+
+const updateUser = async (req, res) => {
     try {
-        let userId = req.params.userId;
-        let tokenId = req.userId
+        const userId = req.params.userId
+        const tokenId = req.userId
         if (!(validateBody.isValidObjectId(userId) && validateBody.isValidObjectId(tokenId))) {
-            return res.status(400).send({ status: false, message: "userId or tokenId is not valid" });;
+            return res.status(400).send({ status: false, message: "Not a valid userId or tokenId" });;
         }
 
-
-        const user = await userModel.findById(userId)
-        if (!user) {
-            return res.status(404).send({ status: false, message: "User does not exist with this userid" })
-        }
-        if (!(userId.toString() == tokenId.toString())) {
-            return res.status(401).send({ status: false, message: `Unauthorized access! Owner info doesn't match` });
-        }
         let updateBody = req.body
         if (!validateBody.isValidRequestBody(updateBody)) {
             return res.status(400).send({ status: false, message: "Please provide data to proceed your update request" });
         }
-        const { fname, lname, email, profileImage, phone, password, address } = updateBody
-        if (fname || lname || email || phone || password || address || profileImage) {
-            //validation for empty strings/values.
+        if (!(userId.toString() == tokenId.toString())) {
+            return res.status(401).send({ status: false, message: `Unauthorized access! Owner info doesn't match` });
+        }
+        const user = await userModel.findById(userId)
+        if (!user) {
+            return res.status(404).send({ status: false, message: "User does not exist with this userid" })
+        }
+
+        const { fname, lname, email, phone } = updateBody
+        if (fname || lname || email || phone) {
+
             if (!validateBody.validString(fname)) {
                 return res.status(400).send({ status: false, message: "fname is missing ! Please provide the fname details to update." })
             }
@@ -227,51 +182,82 @@ const updateUserList = async (req, res) => {
             if (!validateBody.validString(email)) {
                 return res.status(400).send({ status: false, message: "email is missing ! Please provide the email details to update." })
             }
-
-            if (!validateBody.validString(phone)) {
-                return res.status(400).send({ status: false, message: "phone number is missing ! Please provide the phone number to update." })
-            }
-            if (!validateBody.validString(password)) {
-                return res.status(400).send({ status: false, message: "password is missing ! Please provide the password to update." })
+            if (email) {
+                if (!validateBody.isValidSyntaxOfEmail(email)) {
+                    return res.status(404).send({ status: false, message: "Please provide a valid Email Id" });
+                }
             }
 
-            if (!validateBody.validString(profileImage)) {
-                return res.status(400).send({ status: false, message: "profileImage is missing ! Please provide the profileImage to update." })
+            const duplicateEmail = await userModel.findOne({ email: email });
+            if (duplicateEmail) {
+                return res.status(400).send({ status: false, message: "This user email is already exists with another user" });
+            }
+        }
+        if (!validateBody.validString(phone)) {
+            return res.status(400).send({ status: false, message: "phone number is missing ! Please provide the phone number to update." })
+        }
+        if (phone) {
+            if (!/^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/.test(phone)) {
+                return res.status(400).send({ status: false, message: `Phone number should be a  valid indian number` });
             }
         }
 
-        const duplicateemail = await userModel.findOne({ email: email });
-        if (duplicateemail) {
-            return res.status(400).send({ status: false, message: "This user email is already exists with another user" });
-        }
-        const duplicatephone = await userModel.findOne({ phone: phone })
-        if (duplicatephone) {
-            return res.status(400).send({ status: false, message: "This phone number already exists with another user" });
-        }
-        if (password) {
-            var encryptedPassword = await bcrypt.hash(password, saltRounds)
-        }
 
-        let files = req.files;
-        if ((files && files.length > 0)) {
-            const profileImage = await uploadFile(files[0])
-            let updateProfile = await userModel.findOneAndUpdate({ _id: userId }, { fname: fname, lname: lname, email: email, password: encryptedPassword, profileImage: profileImage, address: address, phone }, { new: true });
-            res.status(200).send({ status: true, message: "user profile updated successfully", data: updateProfile, });
-        } else {
-            let updateProfile = await userModel.findOneAndUpdate({ _id: userId }, { fname: fname, lname: lname, email: email, password: encryptedPassword, address: address, phone }, { new: true });
-            res.status(200).send({ status: true, message: "user profile updated successfull", data: updateProfile, });
-        }
+
+        let updateProfile = await userModel.findOneAndUpdate({ _id: userId }, { fname: fname, lname: lname, email: email, phone: phone }, { new: true });
+        res.status(200).send({ status: true, message: "user profile updated successfully", data: updateProfile, });
     } catch (err) {
         console.log(err)
         return res.status(500).send({ message: err.message });
     };
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//-----------------Fourth API UPDATE USER DETAILS
+
+
 module.exports = {
     userRegistration,
     userLogin,
     getUserList,
-    updateUserList
+    updateUser
 }
 
 

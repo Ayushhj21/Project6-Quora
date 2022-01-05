@@ -13,7 +13,7 @@ router.post('/user', userController.userRegistration)
 // //-----------------THIRD API GET USER DETAILS
  router.get('/user/:userId/profile',middleware.getUserDetails,userController.getUserList)
 // //-----------------THIRD API UPDATE USER DETAILS
-// router.put('/user/:userId/profile',myMiddleware.getUserDetails,userController.updateUserList)
+ router.put('/user/:userId/profile',middleware.getUserDetails,userController.updateUser)
 
 // //-----------------FEATURE II - PRODUCT API
 // //-----------------FIRST API CREATE PRODUCT
