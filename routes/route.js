@@ -19,8 +19,8 @@ router.post('/user', userController.userRegistration)
 // //-----------------FEATURE II - Question API
 
 router.post('/question',middleware.getUserDetails,questionController.createQuestion)
-//  router.get('/question',questionController.getQuestions)
-// router.get('/products/:productId',productController.getProductsById)
+router.get('/question',questionController.getQuestions)
+ router.get('/questions/:questionId',questionController.getQuestionById)
 // //-----------------FOURTH API UPDATE PRODUCT DETAIL
 // router.put('/products/:productId',productController.updateProduct)
 
