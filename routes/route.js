@@ -20,15 +20,17 @@ router.post('/user', userController.userRegistration)
 
 router.post('/question',middleware.getUserDetails,questionController.createQuestion)
 router.get('/question',questionController.getQuestions)
- router.get('/questions/:questionId',questionController.getQuestionById)
- router.put('/questions/:questionId',middleware.getUserDetails,questionController.updateQuestion)
-
- router.delete('/questions/:questionId',middleware.getUserDetails,questionController.deleteQuestion)
+router.get('/questions/:questionId',questionController.getQuestionById)
+router.put('/questions/:questionId',middleware.getUserDetails,questionController.updateQuestion)
+router.delete('/questions/:questionId',middleware.getUserDetails,questionController.deleteQuestion)
 // //-----------------FOURTH API UPDATE PRODUCT DETAIL
 // router.put('/products/:productId',productController.updateProduct)
 
 
 router.post('/answer',middleware.getUserDetails,answerController.createAnswer)
+router.get('/questions/:questionId/answer',answerController.getAnswers)
+router.put('/answer/:answerId',middleware.getUserDetails,answerController.updateAnswer)
+router.delete('/answers/:answerId',middleware.getUserDetails,answerController.deleteAnswer)
 
 
 // //-----------------FIFTH API DELETE PRODUCT FROM DB

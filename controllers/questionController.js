@@ -157,8 +157,6 @@ const updateQuestion = async (req, res) => {
             return res.status(404).send({ status: false, msg: "question does not exist" })
         }
         if (!(question.askedBy == tokenId)) {
-            console.log(question.askedBy)
-            console.log(tokenId)
 
             return res.status(401).send({ status: false, message: `Unauthorized access! Owner info doesn't match` });
         }
