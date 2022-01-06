@@ -49,31 +49,66 @@ const getQuestions = async (req, res) => {
     try {
         let filterQuery = req.query;
         let { tag, sort } = filterQuery;
+        if (tag || sort) {
+            let query = { isDeleted: false }
+            if (validateBody.isValid(tag)) {
+                const tagArr = tag.split(',')
+                query['tag'] = { $all: tagArr }
+            }
 
-        let query = { isDeleted: false }
-        if (validateBody.isValid(tag)) {
-            const tagArr = tag.split(',')
-            query['tag'] = { $all: tagArr }
-        }
-        //The $all operator selects the documents where the value of a field is an 
-        //array that contains all the specified elements.
-        if (sort) {
-            if (sort == "ascending") {
-                var data = await questionModel.find(query).sort({ createdAt: 1 })
+
+            //The $all operator selects the documents where the value of a field is an 
+            //array that contains all the specified elements.
+            if (sort) {
+                if (sort == "ascending") {
+                    var data = await questionModel.find(query).sort({ createdAt: 1 })
+                }
+                if (sort == "descending") {
+                    var data = await questionModel.find(query).sort({ createdAt: -1 })
+                }
             }
-            if (sort == "descending") {
-                var data = await questionModel.find(query).sort({ createdAt: -1 })
+            if (!sort) {
+                var data = await questionModel.find(query)
+            }
+            const questionsCount = data.length
+            if (!(questionsCount > 0)) {
+                return res.status(404).send({ status: false, msg: "No question found" })
+            }
+
+            let quesAns = []
+            for (let i = 0; i < data.length; i++) {
+                quesAns.push(data[i].toObject())
+            }
+            let answer = await answerModel.find()
+            for (Ques of quesAns) {
+                for (Ans of answer) {
+                    if ((Ques._id).toString() == (Ans.questionId).toString()) {
+                        Ques['answers'] = Ans
+                    }
+                }
+            }
+            return res.status(200).send({ status: true, message: `${questionsCount} Successfully Question Answer Found`, data: quesAns });
+        }
+        let getQuestion = await questionModel.find()
+        const countQuestion = getQuestion.length
+        if (!(countQuestion > 0)) {
+            return res.status(404).send({ status: false, msg: "No question found" })
+        }
+        let withoutFilterQuesAns = []
+        for (let i = 0; i < getQuestion.length; i++) {
+            withoutFilterQuesAns.push(getQuestion[i].toObject())
+        }
+        let withoutFilterAnswer = await answerModel.find()
+        for (Ques of withoutFilterQuesAns) {
+            for (Ans of withoutFilterAnswer) {
+                if ((Ques._id).toString() == (Ans.questionId).toString()) {
+                    Ques['answers'] = Ans
+                }
             }
         }
-        if (!sort) {
-            var data = await questionModel.find(query)
-        }
-        for (let i = 0; i < data.length; i++) {
-            let answer = await answerModel.find({ questionId: data[i]._id }).select({ text: 1, answeredBy: 1})
-            data[i].answers = answer
-            //console.log(answer)
-        }
-        return res.status(200).send({ status: true, Details: data });
+
+        return res.status(200).send({ status: true, msg: `${countQuestion} Successfully found data`, data: withoutFilterQuesAns })
+
     } catch (err) {
         console.log(err)
         return res.status(500).send({ status: false, message: err.message })
@@ -104,53 +139,87 @@ const getQuestionById = async (req, res) => {
 
 
 
+const updateQuestion = async (req, res) => {
 
+    try {
+        const requestBody = req.body
+        const questionId = req.params.questionId
+        const tokenId = req.userId
 
-// const questions = await questionModel.find(query).sort({})
+        if (!validateBody.isValidRequestBody(requestBody)) {
+            return res.status(400).send({ status: false, message: "Please provide data for successful registration" });
+        }
+        if (!(validateBody.isValidObjectId(questionId))) {
+            return res.status(400).send({ status: false, message: `${questionId} is not a valid id` });
+        }
+        const question = await questionModel.findOne({ _id: questionId, isDeleted: false })
+        if (!question) {
+            return res.status(404).send({ status: false, msg: "question does not exist" })
+        }
+        if (!(question.askedBy == tokenId)) {
+            console.log(question.askedBy)
+            console.log(tokenId)
 
-// console.log(questions)
-// if (!questions) {
-//     return res.status(404).send({ status: false, message: 'No data found' })
-// }
-
-
-// const id = (questions._id)
-// console.log(id)
-// const answers = await answerModel.find({ questionId: id })
-// if ((Object.keys(answers).length > 0)) {
-//     const getQuestions = {
-//         description,
-//         tag,
-//         askedBy,
-//         answers: answers
-//     }
-//     return res.status(200).send({ status: true, message: "Questions data found successfully", data: getQuestions });
-// }
-// // return res.status(200).send({ status: true, message: `${countQuestions} Questions Found`, data: questions });
-// if (!(Object.keys(answers).length > 0)) {
-//     const getQuestions = {
-//         description,
-//         tag,
-//         askedBy,
-//         answers: "No answers given"
-//     }
-//     return res.status(200).send({ status: true, message: "Questions data found successfully", data: questions });
-// }
-
-//     } catch (err) {
-//     console.log(err)
-//     res.status(500).send({ status: false, msg: err.message })
-// }
+            return res.status(401).send({ status: false, message: `Unauthorized access! Owner info doesn't match` });
+        }
 
 
 
+        let { description, tag } = requestBody
+        if (!validateBody.validString(description)) {
+            return res.status(400).send({ status: false, message: "description is missing ! Please provide the description to update." })
+        }
+        if (!validateBody.validString(tag)) {
+            return res.status(400).send({ status: false, message: "tags is missing ! Please provide the tags to update." })
+        }
+        if(tag){
+            tag=tag.split(",")
+        }
+        const updateQuestion = await questionModel.findOneAndUpdate({ _id: questionId }, { description: description, tag:tag }, { new: true })
+        return res.status(200).send({ status: true, message: "Question is updated", data: updateQuestion })
+        
+    } catch (err) {
+        console.log(err)
+        return res.status(500).send({ status: false, msg: err.message })
+    }
 
-// let getquestion = await questionModel.find()
-// const countquestion = getquestion.length
-// if (!(countquestion > 0)) {
-//     return res.status(404).send({ status: false, msg: "No question found" })
-// }
-// return res.status(200).send({ status: true, message: `${countquestion} Questions Found`, data: getquestion });
+}
+
+
+
+
+
+const deleteQuestion = async (req, res) => {
+    try {
+        const questionId = req.params.questionId;
+        const tokenId = req.userId
+        if (!validateBody.isValidObjectId(questionId)) {
+            return res.status(400).send({ status: false, message: `${questionId} is not a valid question id` })
+        }
+        if (!(validateBody.isValidObjectId(tokenId))) {
+            return res.status(400).send({ status: false, message: "Not a valid userId or tokenId" });;
+        }
+
+        const questionFind = await questionModel.findOne({ _id: questionId })
+        if (!questionFind) {
+            return res.status(404).send({ status: false, message: `Question Details not found with given questionId` })
+        }
+
+        if (questionFind.isDeleted == true) {
+            return res.status(404).send({ status: false, message: "This Question is already deleted" });
+        }
+        if (!(questionFind.askedBy.toString() == tokenId.toString())) {
+            return res.status(401).send({ status: false, message: `Unauthorized access! Owner info doesn't match` });
+        }
+
+        const deleteQuestion = await questionModel.findOneAndUpdate({ _id: questionId }, { isDeleted: true, deletedAt: new Date() })
+        return res.status(200).send({ status: true, message: `Question deleted successfully`, data: deleteQuestion })
+    }
+    catch (err) {
+        return res.status(500).send({ message: err.message });
+    }
+}
+
 
 
 
@@ -162,3 +231,5 @@ const getQuestionById = async (req, res) => {
 module.exports.createQuestion = createQuestion
 module.exports.getQuestions = getQuestions
 module.exports.getQuestionById = getQuestionById
+module.exports.deleteQuestion = deleteQuestion
+module.exports.updateQuestion = updateQuestion

@@ -21,6 +21,9 @@ router.post('/user', userController.userRegistration)
 router.post('/question',middleware.getUserDetails,questionController.createQuestion)
 router.get('/question',questionController.getQuestions)
  router.get('/questions/:questionId',questionController.getQuestionById)
+ router.put('/questions/:questionId',middleware.getUserDetails,questionController.updateQuestion)
+
+ router.delete('/questions/:questionId',middleware.getUserDetails,questionController.deleteQuestion)
 // //-----------------FOURTH API UPDATE PRODUCT DETAIL
 // router.put('/products/:productId',productController.updateProduct)
 

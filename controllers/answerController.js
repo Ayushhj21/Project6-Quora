@@ -8,46 +8,50 @@ const validateBody = require('../validators/validator');
 
 const createAnswer = async (req, res) => {
     try {
-        let requestbody = req.body;
+        let requestBody = req.body;
         const userId = req.body.answeredBy
-        let TokenDetail = req.userId
+        const tokenId = req.userId
 
-        if (!validateBody.isValidRequestBody(requestbody)) {
-            res.status(400).send({ status: false, message: 'Invalid request parameters' });
-            return
+        if (!validateBody.isValidRequestBody(requestBody)) {
+            return res.status(400).send({ status: false, message: 'Invalid request parameters' });
+
         }
 
-        if (!(TokenDetail == requestbody.answeredBy)) {
-            res.status(400).send({ status: false, message: "userId in url param and in token is not same" })
+        if (!(validateBody.isValidObjectId(userId) && validateBody.isValidObjectId(tokenId))) {
+            return res.status(400).send({ status: false, message: "Not a valid userId or tokenId" });;
         }
 
-        let { answeredBy, text, questionId } = requestbody;
+
+        if (!(userId.toString() == tokenId.toString())) {
+            return res.status(401).send({ status: false, message: `Unauthorized access! Owner info doesn't match` });
+        }
+
+        let { answeredBy, text, questionId } = requestBody;
 
         if (!validateBody.isValidObjectId(answeredBy)) {
             return res.status(400).send({ status: false, message: `${answeredBy} is not a valid User id` })
         }
 
-        const UserFound = await userModel.findById({ _id: answeredBy })
-        if (!UserFound) {
+        const user = await userModel.findById({ _id: answeredBy })
+        if (!user) {
             return res.status(404).send({ status: false, message: `User Details not found with given userId` })
         }
 
         if (!validateBody.isValid(text)) {
-            res.status(400).send({ status: false, message: `text is required` })
-            return
+            return res.status(400).send({ status: false, message: `text is required` })
         }
         if (!validateBody.isValidObjectId(questionId)) {
             return res.status(400).send({ status: false, message: `${questionId} is not a valid Question id` })
         }
 
-        const QuestionFound = await questionModel.findOne({ _id: questionId, isDeleted: false })
-        if (!QuestionFound) {
+        const question = await questionModel.findOne({ _id: questionId, isDeleted: false })
+        if (!question) {
             return res.status(404).send({ status: false, message: `Question Details not found with given questionid` })
         }
 
-        let data = { answeredBy, text, questionId };
-        let createAns = await answerModel.create(data);
-        return res.status(201).send({ status: true, data: createAns })
+       
+        let answer= await answerModel.create(requestBody);
+        return res.status(201).send({ status: true, data: answer })
     } catch (err) {
         return res.status(500).send({ status: false, message: err.message })
     }

@@ -1,30 +1,24 @@
-const college = await CollegeModel.findOne({name:req.query.collegeName, isDeleted:false})
-if(!college){
-   return res.status(404).send({ status: false, message: 'No data found for this college' })
-}
- const { name, fullName, logoLink } = college;
- const id = (college._id).toString()
- const interests = await internModel.find({ collegeId: id, isDeleted:false}).select({ name: 1, _id: 1, email:1, mobile:1 })
- if((Object.keys(interests).length > 0)){
-     const internfromcollege= {
-         name,
-         fullName,
-         logoLink,
-         interests: interests
-     }
-     res.status(200).send({ status: true, message: "College data found successfully", data: internfromcollege });
-  }
-  if(!(Object.keys(interests).length > 0)){
-     const internfromcollege= {
-         name,
-         fullName,
-         logoLink,
-         interests: "No student present for internship"
-     }
-     res.status(200).send({ status: true, message: "College data found successfully", data: internfromcollege });
-  }
-}
-catch (error) {
- res.status(500).send({ status: false, Errormsg: error.message })
-}
-};
+const countAllquestion = getAllQuestion.length
+            if (!(countAllquestion > 0)) {
+                return res.status(404).send({ status: false, msg: "No question found" })
+            }
+            let quesAns = []
+            for (let i = 0; i < getAllQuestion.length; i++) {
+                quesAns.push(getAllQuestion[i].toObject())
+            }
+            let answer = await answerModel.find()
+            for (Ques of quesAns) {
+                for (Ans of answer) {
+                    if ((Ques._id).toString() == (Ans.questionId).toString()) {
+                        Ques['answers'] = Ans
+                    }
+                }
+            }
+            return res.status(200).send({ status: true, message: `${countquestion} Successfully Question Answer Found`, data:quesAns});
+        }
+        let getquestion = await questionModel.find()
+        const countquestion = getquestion.length
+        if (!(countquestion > 0)) {
+            return res.status(404).send({ status: false, msg: "No question found" })
+        }
+        return res.status(200).send({ status: true, msg: `${countquestion} Successfully found data`, data: getquestion })
