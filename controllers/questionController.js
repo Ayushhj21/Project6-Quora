@@ -49,65 +49,37 @@ const getQuestions = async (req, res) => {
     try {
         let filterQuery = req.query;
         let { tag, sort } = filterQuery;
-        if (tag || sort) {
-            let query = { isDeleted: false }
-            if (validateBody.isValid(tag)) {
-                const tagArr = tag.split(',')
-                query['tag'] = { $all: tagArr }
-            }
 
-
-            //The $all operator selects the documents where the value of a field is an 
-            //array that contains all the specified elements.
-            if (sort) {
-                if (sort == "ascending") {
-                    var data = await questionModel.find(query).sort({ createdAt: 1 })
-                }
-                if (sort == "descending") {
-                    var data = await questionModel.find(query).sort({ createdAt: -1 })
-                }
-            }
-            if (!sort) {
-                var data = await questionModel.find(query)
-            }
-            const questionsCount = data.length
-            if (!(questionsCount > 0)) {
-                return res.status(404).send({ status: false, msg: "No question found" })
-            }
-
-            let quesAns = []
-            for (let i = 0; i < data.length; i++) {
-                quesAns.push(data[i].toObject())
-            }
-            let answer = await answerModel.find()
-            for (Ques of quesAns) {
-                for (Ans of answer) {
-                    if ((Ques._id).toString() == (Ans.questionId).toString()) {
-                        Ques['answers'] = Ans
-                    }
-                }
-            }
-            return res.status(200).send({ status: true, message: `${questionsCount} Successfully Question Answer Found`, data: quesAns });
+        let query = { isDeleted: false }
+        if (validateBody.isValid(tag)) {
+            const tagArr = tag.split(',')
+            query['tag'] = { $all: tagArr }
         }
-        let getQuestion = await questionModel.find()
-        const countQuestion = getQuestion.length
-        if (!(countQuestion > 0)) {
+
+
+        //The $all operator selects the documents where the value of a field is an 
+        //array that contains all the specified elements.
+        if (sort) {
+            if (sort == "ascending") {
+                var data = await questionModel.find(query).lean().sort({ createdAt: 1 })
+            }
+            if (sort == "descending") {
+                var data = await questionModel.find(query).lean().sort({ createdAt: -1 })
+            }
+        }
+        if (!sort) {
+            var data = await questionModel.find(query).lean()
+        }
+        const questionsCount = data.length
+        if (!(questionsCount > 0)) {
             return res.status(404).send({ status: false, msg: "No question found" })
         }
-        let withoutFilterQuesAns = []
-        for (let i = 0; i < getQuestion.length; i++) {
-            withoutFilterQuesAns.push(getQuestion[i].toObject())
-        }
-        let withoutFilterAnswer = await answerModel.find()
-        for (Ques of withoutFilterQuesAns) {
-            for (Ans of withoutFilterAnswer) {
-                if ((Ques._id).toString() == (Ans.questionId).toString()) {
-                    Ques['answers'] = Ans
-                }
-            }
+        for (let i = 0; i < data.length; i++) {
+            let answer = await answerModel.find({ questionId: data[i]._id })
+            data[i].answers = answer
         }
 
-        return res.status(200).send({ status: true, msg: `${countQuestion} Successfully found data`, data: withoutFilterQuesAns })
+        return res.status(200).send({ status: true, message: `${questionsCount} Successfully Question Answer Found`, data: data });
 
     } catch (err) {
         console.log(err)
@@ -170,12 +142,12 @@ const updateQuestion = async (req, res) => {
         if (!validateBody.validString(tag)) {
             return res.status(400).send({ status: false, message: "tags is missing ! Please provide the tags to update." })
         }
-        if(tag){
-            tag=tag.split(",")
+        if (tag) {
+            tag = tag.split(",")
         }
-        const updateQuestion = await questionModel.findOneAndUpdate({ _id: questionId }, { description: description, tag:tag }, { new: true })
+        const updateQuestion = await questionModel.findOneAndUpdate({ _id: questionId }, { description: description, tag: tag }, { new: true })
         return res.status(200).send({ status: true, message: "Question is updated", data: updateQuestion })
-        
+
     } catch (err) {
         console.log(err)
         return res.status(500).send({ status: false, msg: err.message })

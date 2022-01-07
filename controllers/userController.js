@@ -11,7 +11,7 @@ const userRegistration = async (req, res) => {
         if (!validateBody.isValidRequestBody(requestBody)) {
             return res.status(400).send({ status: false, message: "Please provide data for successful registration" });
         }
-        const { fname, lname, email, phone, password } = requestBody;
+        const { fname, lname, email, phone, password,creditScore } = requestBody;
 
 
        
@@ -57,9 +57,19 @@ const userRegistration = async (req, res) => {
             return res.status(400).send({ status: false, message: "Please provide password with minimum 8 and maximum 14 characters" });;
         }
 
+        if (!validateBody.isValid(creditScore)) {
+            return res.status(400).send({ status: false, message: "Please provide creditScore or creditScore field" });;
+        }
+        if (isNaN(creditScore)) {
+            return res.status(400).send({ status: false, message: "You can't use special character or alphabet in CreditScore" });
+        }
+        if ( creditScore < 0) {
+            return res.status(400).send({ status: false, message: "You can't Insert negative values in CreditScore" });
+        }
+
         //-----------SAVE USER PASSWORD WITH LOOK LIKE HASHED PASSWORD STORED IN THE DATABASE
         const hash = bcrypt.hashSync(password, saltRounds);
-        let userRegister = { fname, lname, email, phone, password: hash }
+        let userRegister = { fname, lname, email, phone, password: hash,creditScore }
         const userData = await userModel.create(userRegister);
         return res.status(201).send({ status: true, message: 'Success', data: userData });
     }

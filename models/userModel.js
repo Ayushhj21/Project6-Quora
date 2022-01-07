@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema({
    phone: { type: String, trim: true,unique:true, valid: 'valid Indian mobile number' },
 
     password: { type:String, required: true, trim: true },
+
+    creditScore:{type:Number,required:true,trim:true}
     
 }, { timestamps: true })
 
