@@ -30,13 +30,17 @@ const createQuestion = async (req, res) => {
         if (!(userId.toString() == tokenId.toString())) {
             return res.status(401).send({ status: false, message: `Unauthorized access! Owner info doesn't match` });
         }
-        const user = await userModel.findById(askedBy)
+        const user = await userModel.findById(userId)
         if (!user) {
             return res.status(400).send({ status: false, message: "user not found with this userId" })
+        }
+        if (user.creditScore < 100) {
+            return res.status(400).send({ status: false, Message: "You don't have enough credit score to post a question" })
         }
         requestBody.tag = tag.split(",")
         console.log(tag)
         const createQuestion = await questionModel.create(requestBody)
+        await userModel.findOneAndUpdate({ _id: userId }, { $inc: { creditScore: -100 } })
         return res.status(201).send({ status: true, message: "Question created Successfully", data: createQuestion })
     }
     catch (err) {

@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
+
 //----------------------FIRST API CREATE USER....///
 const userRegistration = async (req, res) => {
     try {
