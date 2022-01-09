@@ -112,14 +112,7 @@ const userLogin = async (req, res) => {
                     exp: Math.floor(Date.now() / 1000) + 60 * 240 ////setting token expiry time limit
                 }, 'ayushprivatekey')
 
-                return res.status(200).send({
-                    "status": true,
-                    Message: " user loggedIn Succesfully",
-                    data: {
-                        userId: user._id,
-                        token: generatedToken,
-                    }
-                });
+                return res.status(200).send({"status": true,Message: " user loggedIn Succesfully",data: {userId: user._id, token: generatedToken,}});
             } else {
                 res.status(401).send({ error: "User does not exist with that password" });
             }
@@ -209,9 +202,16 @@ const updateUser = async (req, res) => {
             return res.status(400).send({ status: false, message: "phone number is missing ! Please provide the phone number to update." })
         }
         if (phone) {
+            const duplicatephone = await userModel.findOne({ phone: phone })
+            if (duplicatephone) {
+                return res.status(400).send({ status: false, message: "This phone number already exists with another user" });
+            }
+
             if (!/^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/.test(phone)) {
                 return res.status(400).send({ status: false, message: `Phone number should be a  valid indian number` });
             }
+             
+
         }
 
 

@@ -6,11 +6,11 @@ const validateBody = require('../validators/validator');
 
 const createAnswer = async function (req, res) {
     try {
+        const requestBody = req.body
         const userId = req.body.answeredBy
         const questionId = req.body.questionId
         const tokenId = req.userId
-        const requestBody = req.body
-
+        
         if (!validateBody.isValidRequestBody(requestBody)) {
             return res.status(400).send({ status: false, message: "Please provide data for successful Answer create for Particular Question" });
         }
@@ -43,7 +43,7 @@ const createAnswer = async function (req, res) {
         }
         let userScoredata = await questionModel.findOne({ _id: questionId })
         if (!(req.body.answeredBy == userScoredata.askedBy)) {
-            let increaseScore = await userModel.findOneAndUpdate({ _id: userId }, { $inc: { creditScore: + 200 } })
+            let increaseScore = await userModel.findOneAndUpdate({ _id: userId }, { $inc: { creditScore: + 200 }},{new:true})
             const data = { answeredBy:userId , text, questionId }
             const answerData = await answerModel.create(data);
             let totalData = { answerData, increaseScore }

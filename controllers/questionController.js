@@ -38,7 +38,6 @@ const createQuestion = async (req, res) => {
             return res.status(400).send({ status: false, Message: "You don't have enough credit score to post a question" })
         }
         requestBody.tag = tag.split(",")
-        console.log(tag)
         const createQuestion = await questionModel.create(requestBody)
         await userModel.findOneAndUpdate({ _id: userId }, { $inc: { creditScore: -100 } })
         return res.status(201).send({ status: true, message: "Question created Successfully", data: createQuestion })
@@ -186,7 +185,7 @@ const deleteQuestion = async (req, res) => {
             return res.status(401).send({ status: false, message: `Unauthorized access! Owner info doesn't match` });
         }
 
-        const deleteQuestion = await questionModel.findOneAndUpdate({ _id: questionId }, { isDeleted: true, deletedAt: new Date() })
+        const deleteQuestion = await questionModel.findOneAndUpdate({ _id: questionId }, { isDeleted: true, deletedAt: new Date() },{new:true})
         return res.status(200).send({ status: true, message: `Question deleted successfully`, data: deleteQuestion })
     }
     catch (err) {
