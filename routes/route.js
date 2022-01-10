@@ -33,28 +33,5 @@ router.put('/answer/:answerId',middleware.getUserDetails,answerController.update
 router.delete('/answers/:answerId',middleware.getUserDetails,answerController.deleteAnswer)
 
 
-// //-----------------FIFTH API DELETE PRODUCT FROM DB
-// router.delete('/products/:productId',productController.deleteProduct)
-
-
-// router.post('/users/:userId',myMiddleware.getUserDetails,cartController.createCartProduct)
-
-// //-----------------THIRD API GET CART DETAIL
-
-// router.put('/users/:userId/cart',myMiddleware.getUserDetails,cartController.updateCart)
-// router.get('/users/:userId/cart',myMiddleware.getUserDetails,cartController.getCartList)
-
-// router.delete('/users/:userId/cart',myMiddleware.getUserDetails,cartController.deleteCart)
-
-
-// router.post('/users/:userId/orders',myMiddleware.getUserDetails,orderController.createOrder)
-
-// router.put('/users/:userId/orders',myMiddleware.getUserDetails,orderController.updateOrder)
-
-
-
-
-//---------------------------GENERATE S3 URL----------------------------//
-//router.post('/write-file-aws',awsController.userAws)
 
 module.exports = router;

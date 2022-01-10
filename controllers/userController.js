@@ -32,7 +32,7 @@ const userRegistration = async (req, res) => {
             return res.status(400).send({ status: false, message: "Please provide Email id or email field" });;
         }
         if (!validateBody.isValidSyntaxOfEmail(email)) {
-            return res.status(404).send({ status: false, message: "Please provide a valid Email Id" });
+            return res.status(400).send({ status: false, message: "Please provide a valid Email Id" });
         }
         const DuplicateEmail = await userModel.findOne({ email });
         if (DuplicateEmail) {
@@ -91,7 +91,7 @@ const userLogin = async (req, res) => {
             return res.status(400).send({ status: false, message: "Please provide Email id or email field" });;
         }
         if (!validateBody.isValidSyntaxOfEmail(email)) {
-            return res.status(404).send({ status: false, message: "Please provide a valid Email Id" });
+            return res.status(400).send({ status: false, message: "Please provide a valid Email Id" });
         }
         if (!validateBody.isValid(password)) {
             return res.status(400).send({ status: false, message: "Please provide password or password field" });;

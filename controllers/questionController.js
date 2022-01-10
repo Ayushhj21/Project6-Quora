@@ -71,7 +71,7 @@ const getQuestions = async (req, res) => {
             }
         }
         if (!sort) {
-            var data = await questionModel.find(query).lean()
+            var data = await questionModel.find(query).lean()  //toObject()
         }
         const questionsCount = data.length
         if (!(questionsCount > 0)) {
