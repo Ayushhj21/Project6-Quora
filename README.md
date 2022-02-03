@@ -1,6 +1,3 @@
-
-
-
 # radium
 
 ## Project - Quora
@@ -26,7 +23,7 @@
 - This time each group should have a *single git branch*. Coordinate amongst yourselves by ensuring every next person pulls the code last pushed by a team mate. You branch will be checked as part of the demo. Branch name should follow the naming convention `project/QuoraX`
 - Follow the naming conventions exactly as instructed.
 
-
+## Phase I
 ## FEATURE I - User
 ### Models
 - User Model
@@ -34,9 +31,10 @@
 { 
   fname: {string, mandatory},
   lname: {string, mandatory},
-  email: {string, mandatory, valid email, unique},
+  email: {string, mandatory, valid email, unique(if exist)},
   phone: {string, not mandatory, unique, valid Indian mobile number}, 
   password: {string, mandatory, minLen 8, maxLen 15}, // encrypted password
+  creditScore: {Number, mandatory},
   createdAt: {timestamp},
   updatedAt: {timestamp}
 }
@@ -60,6 +58,7 @@
         "email": "johndoe@mailinator.com",
         "phone": "9876543210",
         "password": "$2b$10$DpOSGb0B7cT0f6L95RnpWO2P/AtEoE6OF9diIiAEP7QrTMaV29Kmm",
+        "creditScore": 500,
         "_id": "6162876abdcb70afeeaf9cf5",
         "createdAt": "2021-10-10T06:25:46.051Z",
         "updatedAt": "2021-10-10T06:25:46.051Z",
@@ -101,6 +100,7 @@
         "email": "johndoe@mailinator.com",
         "phone": "9876543210",
         "password": "$2b$10$DpOSGb0B7cT0f6L95RnpWO2P/AtEoE6OF9diIiAEP7QrTMaV29Kmm",
+        "creditScore": 600,
         "createdAt": "2021-10-10T06:25:46.051Z",
         "updatedAt": "2021-10-10T06:25:46.051Z",
         "__v": 0
@@ -126,6 +126,7 @@
         "email": "janedoe@mailinator.com",
         "phone": "9876543210",
         "password": "$2b$10$jgF/j/clYBq.3uly6Tijce4GEGJn9EIXEcw9NI3prgKwJ/6.sWT6O",
+        "creditScore": 600,
         "createdAt": "2021-10-10T06:25:46.051Z",
         "updatedAt": "2021-10-10T08:47:15.297Z",
         "__v": 0
@@ -203,7 +204,8 @@ Send [form-data](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
 {
   answeredBy: {ObjectId, refs to User, mandatory},
   text: {string, mandatory},
-  questionId: {ObjectId, refs to question, mandatory}, 
+  questionId: {ObjectId, refs to question, mandatory},
+  isDeleted : default false,
   createdAt: {timestamp},
   updatedAt: {timestamp},
 }
@@ -217,15 +219,19 @@ Send [form-data](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
   - _**On success**_ - Return HTTP status 201. Also return the answer document. The response should be a JSON object like [this](#successful-response-structure)
   - _**On error**_ - Return a suitable error message with a valid HTTP status code. The response should be a JSON object like [this](#error-response-structure)
 
-### GET questions/:questionId/answers/:answerId (public api)
+```diff
++ Please note a user can not answer their own question. In such a scenario, return a suitable HTTP status code and message.
+```  
+
+### GET questions/:questionId/answer (public api)
 - get all the answers linked to the question id.
-### PUT /answer (authentication and authorisation required)
+### PUT /answer/:answerId (authentication and authorisation required)
 - onyl the user posted the answer can edit the answer
 - __Response format__
   - _**On success**_ - Return HTTP status 201. Also return the answer document. The response should be a JSON object like [this](#successful-response-structure)
   - _**On error**_ - Return a suitable error message with a valid HTTP status code. The response should be a JSON object like [this](#error-response-structure)
 
-### DELETE /answer(authentication and authorisation required)
+### DELETE answers/:answerId(authentication and authorisation required)
 -only the user posted the answer can delete it. Get the userId and questionId in the request body.
 - __Response format__
   - _**On success**_ - Return HTTP status 200. Also return the answer document. The response should be a JSON object like [this](#successful-response-structure)
@@ -258,6 +264,15 @@ Send [form-data](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
 }
 ```
 
+## Phase II
+
+- There will be a credit score of 500 for every newly registered user. 
+- On posting a **question** there will be a deduction of 100 from the credit score of the OP (the one who posts the question).
+- On  posting a **answer** there will be a reward of 200 to the credit score of the person answering the question.
+- credit score cannot be **-ve**.
+- once credit score reached to 0, user cannot post any question and a suitable message should be displayed to the user. 
+- All the Answers of the questions will be sorted on the basis of recency. Example: if there are 10 answers linked to  same question_id then sort 10 answers on the basis of the time the answer was posted. In other words, the question detail should contain the list of answers in an order where the answer posted most recently would be listed first
+
 ## Collections
 ## users
 ```yaml
@@ -267,6 +282,7 @@ Send [form-data](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
   lname: 'Doe',
   email: 'johndoe@mailinator.com',
   phone: '9876543210',
+  creditScore: 200,
   password: '$2b$10$O.hrbBPCioVm237nAHYQ5OZy6k15TOoQSFhTT.recHBfQpZhM55Ty', // encrypted password
   createdAt: "2021-09-17T04:25:07.803Z",
   updatedAt: "2021-09-17T04:25:07.803Z",
