@@ -1,4 +1,3 @@
-# radium
 
 ## Project - Quora
 
